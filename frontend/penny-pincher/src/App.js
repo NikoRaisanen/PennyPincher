@@ -16,6 +16,20 @@ function App() {
     token: linkToken,
     onSuccess: (public_token, metadata) => {
       console.log('Success:', public_token, metadata);
+      fetch('http://localhost:8000/api/exchange_public_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ public_token }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Access Token:', data.access_token);
+          console.log('Item ID:', data.item_id);
+          // TODO: do something with the access token
+        })
+        .catch((error) => console.error('Error:', error));
     },
     onExit: (err, metadata) => {
       console.log('Exit:', err, metadata);
