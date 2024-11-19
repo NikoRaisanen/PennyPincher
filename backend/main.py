@@ -1,5 +1,6 @@
 import os
 import plaid
+import reader
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 
 # TODO: use logger instead of print statements
+# TODO: get balance: https://plaid.com/docs/api/products/balance/
 load_dotenv()
 CORS(app)
 client_id = os.getenv("PLAID_CLIENT_ID")
@@ -28,8 +30,7 @@ configuration = plaid.Configuration(
 api_client = plaid.ApiClient(configuration)
 client = plaid_api.PlaidApi(api_client)
 
-def get_link_token():
-    client_user_id = 'fake-user2'
+def get_link_token(user_id):
     request = LinkTokenCreateRequest(
         products=[Products('transactions')],
         client_name="Plaid Test App",
@@ -37,7 +38,7 @@ def get_link_token():
         redirect_uri='https://localhost:3030',
         language='en',
         user=LinkTokenCreateRequestUser(
-            client_user_id=client_user_id
+            client_user_id=user_id
         )
     )
     response = client.link_token_create(request)
@@ -46,7 +47,7 @@ def get_link_token():
 @app.route('/api/create_link_token', methods=['GET'])
 def create_link_token():
     try:
-        link_token = get_link_token()
+        link_token = get_link_token('niko-account-id')
         return jsonify({"link_token": link_token}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -60,8 +61,8 @@ def exchange_public_token():
         x_request = ItemPublicTokenExchangeRequest(public_token=public_token)
         response = client.item_public_token_exchange(x_request)
         print('response: ', response)
-        access_token = response['access_token']
-        item_id = response['item_id']
+        access_token = response.get('access_token')
+        item_id = response.get('item_id')
 
         return jsonify({"access_token": access_token, "item_id": item_id}), 200
 
