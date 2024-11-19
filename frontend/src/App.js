@@ -3,10 +3,19 @@ import { usePlaidLink } from 'react-plaid-link';
 import logo from './logo.svg';
 import './App.css';
 
+const HARDCODED_SESSION = 'niko-session-123';
 function App() {
   const [linkToken, setLinkToken] = useState(null);
+  const [userSession, setUserSession] = useState(null);
   useEffect(() => {
-    fetch('http://localhost:8000/api/create_link_token')
+    setUserSession(HARDCODED_SESSION);
+    fetch('http://localhost:8000/api/create_link_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_session: HARDCODED_SESSION }),
+    })
       .then((response) => response.json())
       .then((data) => setLinkToken(data.link_token))
       .catch((error) => console.error('Error:', error));
@@ -21,13 +30,13 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ public_token }),
+        body: JSON.stringify({ public_token, user_session: HARDCODED_SESSION }),
       })
         .then((response) => response.json())
         .then((data) => {
           console.log('Access Token:', data.access_token);
           console.log('Item ID:', data.item_id);
-          // TODO: do something with the access token
+          // TODO: update state to handle success workflow
         })
         .catch((error) => console.error('Error:', error));
     },
@@ -39,6 +48,11 @@ function App() {
     },
   });
 
+  const getBalance = () => {
+    // TODO: implement
+    console.log('calling getBalance');
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -46,6 +60,9 @@ function App() {
         <p>Edit <code>src/App.js</code> and save to reload.</p>
         <button onClick={() => open()} disabled={!ready}>
           Connect to Plaid
+        </button>
+        <button onClick={() => getBalance()}>
+          getBalance
         </button>
       </header>
     </div>
