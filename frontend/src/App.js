@@ -48,9 +48,14 @@ function App() {
     },
   });
 
-  const getBalance = () => {
-    // TODO: implement
-    console.log('calling getBalance');
+  const getBalance = async() => {
+    await fetch('http://localhost:8000/api/balance/get', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_session: HARDCODED_SESSION }),
+    })
   }
 
   return (
